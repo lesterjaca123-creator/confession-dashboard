@@ -14,9 +14,38 @@ const postBtn = document.getElementById("post-btn");
 const charCount = document.getElementById("char-count");
 const categorySelect = document.getElementById("category-select");
 const categoryFilter = document.getElementById("category-filter");
+const sortToggle = document.getElementById("sort-toggle");
+const themeToggle = document.getElementById("theme-toggle");
 
 let confessions = []; // will be filled from Supabase
 let activeFilter = "All";
+let sortMode = "newest";
+
+// ---------- Device ID ----------
+// Lets someone delete their own confessions without needing an account.
+// This ID lives only in their browser — it's not tied to their identity.
+function getDeviceId() {
+  let id = localStorage.getItem("device-id");
+  if (!id) {
+    id = "dev-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem("device-id", id);
+  }
+  return id;
+}
+const deviceId = getDeviceId();
+
+// ---------- Theme ----------
+function applyTheme(theme) {
+  document.body.classList.toggle("light-theme", theme === "light");
+  themeToggle.textContent = theme === "light" ? "☀️" : "🌙";
+  localStorage.setItem("theme", theme);
+}
+applyTheme(localStorage.getItem("theme") || "dark");
+
+themeToggle.addEventListener("click", () => {
+  const isLight = document.body.classList.contains("light-theme");
+  applyTheme(isLight ? "dark" : "light");
+});
 
 // ---------- Character counter ----------
 input.addEventListener("input", () => {
@@ -39,7 +68,7 @@ postBtn.addEventListener("click", async () => {
 
   const { error } = await db
     .from("confessions")
-    .insert([{ text, likes: 0, category }]);
+    .insert([{ text, likes: 0, category, device_id: deviceId }]);
 
   postBtn.textContent = "Confess";
 
@@ -85,7 +114,10 @@ async function loadConfessions() {
     category: row.category || "Random",
     liked: localStorage.getItem(`liked-${row.id}`) === "true",
     comments: (commentRows || []).filter((c) => c.confession_id === row.id),
-    time: timeAgo(row.created_at)
+    time: timeAgo(row.created_at),
+    createdAt: row.created_at,
+    isMine: row.device_id === deviceId,
+    reported: localStorage.getItem(`reported-${row.id}`) === "true"
   }));
 
   renderFeed();
@@ -95,9 +127,15 @@ async function loadConfessions() {
 function renderFeed() {
   feed.innerHTML = "";
 
-  const visible = activeFilter === "All"
-    ? confessions
+  let visible = activeFilter === "All"
+    ? [...confessions]
     : confessions.filter((c) => c.category === activeFilter);
+
+  if (sortMode === "liked") {
+    visible.sort((a, b) => b.likes - a.likes);
+  } else {
+    visible.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
 
   if (visible.length === 0) {
     feed.innerHTML = `<p class="empty-state">No confessions here yet. Be the first.</p>`;
@@ -118,6 +156,10 @@ function renderFeed() {
         <button class="comment-toggle" data-id="${c.id}">
           ${c.comments.length} comment${c.comments.length === 1 ? "" : "s"}
         </button>
+        <div class="card-actions-extra">
+          <button class="icon-btn report-btn ${c.reported ? "reported" : ""}" data-id="${c.id}" title="${c.reported ? "Reported" : "Report"}">⚑</button>
+          ${c.isMine ? `<button class="icon-btn delete-btn" data-id="${c.id}" title="Delete">🗑</button>` : ""}
+        </div>
         <span class="timestamp">${c.time}</span>
       </div>
       <div class="comments" id="comments-${c.id}">
@@ -144,6 +186,20 @@ categoryFilter.addEventListener("click", (e) => {
 
   document.querySelectorAll(".filter-pill").forEach((p) => {
     p.classList.toggle("active", p.dataset.category === activeFilter);
+  });
+
+  renderFeed();
+});
+
+// ---------- Sort toggle ----------
+sortToggle.addEventListener("click", (e) => {
+  const btn = e.target.closest(".sort-btn");
+  if (!btn) return;
+
+  sortMode = btn.dataset.sort;
+
+  document.querySelectorAll(".sort-btn").forEach((b) => {
+    b.classList.toggle("active", b.dataset.sort === sortMode);
   });
 
   renderFeed();
@@ -180,6 +236,58 @@ function attachCardListeners() {
     btn.addEventListener("click", () => {
       const id = btn.dataset.id;
       document.getElementById(`comments-${id}`).classList.toggle("open");
+    });
+  });
+
+  document.querySelectorAll(".delete-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = Number(btn.dataset.id);
+      const confirmed = confirm("Delete this confession? This can't be undone.");
+      if (!confirmed) return;
+
+      btn.disabled = true;
+
+      const { error } = await db
+        .from("confessions")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        console.error("Error deleting confession:", error);
+        alert("Something went wrong deleting your confession.");
+        btn.disabled = false;
+        return;
+      }
+
+      await loadConfessions();
+    });
+  });
+
+  document.querySelectorAll(".report-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = Number(btn.dataset.id);
+
+      if (localStorage.getItem(`reported-${id}`) === "true") {
+        return; // already reported by this device
+      }
+
+      btn.disabled = true;
+
+      const { error } = await db
+        .from("reports")
+        .insert([{ confession_id: id }]);
+
+      btn.disabled = false;
+
+      if (error) {
+        console.error("Error reporting confession:", error);
+        alert("Something went wrong submitting your report.");
+        return;
+      }
+
+      localStorage.setItem(`reported-${id}`, "true");
+      btn.classList.add("reported");
+      btn.title = "Reported";
     });
   });
 
