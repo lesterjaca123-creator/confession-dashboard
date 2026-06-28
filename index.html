@@ -21,9 +21,37 @@
       <textarea id="confession-input" placeholder="Type your confession..." maxlength="500"></textarea>
       <div class="composer-footer">
         <span id="char-count">500 left</span>
+        <select id="category-select">
+          <option value="Random">Random</option>
+          <option value="Hugot">Hugot</option>
+          <option value="Kalokohan">Kalokohan</option>
+          <option value="Red Flag Alert">Red Flag Alert</option>
+          <option value="Crush Diaries">Crush Diaries</option>
+          <option value="Pera Problems">Pera Problems</option>
+          <option value="NPC Moments">NPC Moments</option>
+          <option value="Trabaho/School">Trabaho/School</option>
+          <option value="Late Night Thoughts">Late Night Thoughts</option>
+          <option value="Sermon Mode">Sermon Mode</option>
+          <option value="Conspiracy Corner">Conspiracy Corner</option>
+        </select>
         <button id="post-btn">Confess</button>
       </div>
     </section>
+
+    <div class="category-filter" id="category-filter">
+      <span class="filter-pill active" data-category="All">All</span>
+      <span class="filter-pill" data-category="Hugot">Hugot</span>
+      <span class="filter-pill" data-category="Kalokohan">Kalokohan</span>
+      <span class="filter-pill" data-category="Red Flag Alert">Red Flag Alert</span>
+      <span class="filter-pill" data-category="Crush Diaries">Crush Diaries</span>
+      <span class="filter-pill" data-category="Pera Problems">Pera Problems</span>
+      <span class="filter-pill" data-category="NPC Moments">NPC Moments</span>
+      <span class="filter-pill" data-category="Trabaho/School">Trabaho/School</span>
+      <span class="filter-pill" data-category="Late Night Thoughts">Late Night Thoughts</span>
+      <span class="filter-pill" data-category="Sermon Mode">Sermon Mode</span>
+      <span class="filter-pill" data-category="Conspiracy Corner">Conspiracy Corner</span>
+      <span class="filter-pill" data-category="Random">Random</span>
+    </div>
 
     <section class="feed" id="feed">
       <!-- confessions get inserted here -->

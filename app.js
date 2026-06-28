@@ -12,8 +12,11 @@ const feed = document.getElementById("feed");
 const input = document.getElementById("confession-input");
 const postBtn = document.getElementById("post-btn");
 const charCount = document.getElementById("char-count");
+const categorySelect = document.getElementById("category-select");
+const categoryFilter = document.getElementById("category-filter");
 
 let confessions = []; // will be filled from Supabase
+let activeFilter = "All";
 
 // ---------- Character counter ----------
 input.addEventListener("input", () => {
@@ -29,12 +32,14 @@ postBtn.addEventListener("click", async () => {
   const text = input.value.trim();
   if (!text) return;
 
+  const category = categorySelect.value;
+
   postBtn.disabled = true;
   postBtn.textContent = "Posting...";
 
   const { error } = await db
     .from("confessions")
-    .insert([{ text, likes: 0 }]);
+    .insert([{ text, likes: 0, category }]);
 
   postBtn.textContent = "Confess";
 
@@ -77,6 +82,7 @@ async function loadConfessions() {
     id: row.id,
     text: row.text,
     likes: row.likes,
+    category: row.category || "Random",
     liked: localStorage.getItem(`liked-${row.id}`) === "true",
     comments: (commentRows || []).filter((c) => c.confession_id === row.id),
     time: timeAgo(row.created_at)
@@ -89,16 +95,21 @@ async function loadConfessions() {
 function renderFeed() {
   feed.innerHTML = "";
 
-  if (confessions.length === 0) {
-    feed.innerHTML = `<p class="empty-state">No confessions yet. Be the first.</p>`;
+  const visible = activeFilter === "All"
+    ? confessions
+    : confessions.filter((c) => c.category === activeFilter);
+
+  if (visible.length === 0) {
+    feed.innerHTML = `<p class="empty-state">No confessions here yet. Be the first.</p>`;
     return;
   }
 
-  confessions.forEach((c) => {
+  visible.forEach((c) => {
     const card = document.createElement("div");
     card.className = "confession-card";
 
     card.innerHTML = `
+      <span class="confession-tag">${escapeHtml(c.category)}</span>
       <p class="confession-text">${escapeHtml(c.text)}</p>
       <div class="card-meta">
         <button class="like-btn ${c.liked ? "liked" : ""}" data-id="${c.id}">
@@ -123,6 +134,20 @@ function renderFeed() {
 
   attachCardListeners();
 }
+
+// ---------- Category filter ----------
+categoryFilter.addEventListener("click", (e) => {
+  const pill = e.target.closest(".filter-pill");
+  if (!pill) return;
+
+  activeFilter = pill.dataset.category;
+
+  document.querySelectorAll(".filter-pill").forEach((p) => {
+    p.classList.toggle("active", p.dataset.category === activeFilter);
+  });
+
+  renderFeed();
+});
 
 // ---------- Like / comment interactions ----------
 function attachCardListeners() {
