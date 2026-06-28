@@ -16,6 +16,7 @@
     <p class="eyebrow">say it. no name attached.</p>
     <h1>Alpas</h1>
     <p class="sub">A wall for the things you'd never say out loud. Nobody knows it's you.</p>
+    <p class="live-clock" id="live-clock"></p>
   </header>
 
   <main>
@@ -60,6 +61,8 @@
       <button class="sort-btn" data-sort="liked">Most liked</button>
     </div>
 
+    <p id="cooldown-notice" class="cooldown-notice"></p>
+
     <section class="feed" id="feed">
       <!-- confessions get inserted here -->
     </section>
@@ -73,6 +76,28 @@
     </p>
     <p>Posted anonymously. Be kind, or at least be interesting.</p>
   </footer>
+
+  <div class="modal-overlay" id="report-modal">
+    <div class="modal-box">
+      <h3>Report this confession</h3>
+      <p class="modal-sub">Help us understand what's wrong with this post.</p>
+
+      <select id="report-reason">
+        <option value="Spam">Spam</option>
+        <option value="Hate speech">Hate speech</option>
+        <option value="Harassment">Harassment / bullying</option>
+        <option value="Sensitive content">Sensitive or disturbing content</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <textarea id="report-details" placeholder="Add more details (optional)..." maxlength="300"></textarea>
+
+      <div class="modal-actions">
+        <button id="report-cancel" class="modal-btn-secondary">Cancel</button>
+        <button id="report-submit" class="modal-btn-primary">Submit Report</button>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>

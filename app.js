@@ -16,10 +16,20 @@ const categorySelect = document.getElementById("category-select");
 const categoryFilter = document.getElementById("category-filter");
 const sortToggle = document.getElementById("sort-toggle");
 const themeToggle = document.getElementById("theme-toggle");
+const liveClock = document.getElementById("live-clock");
+const cooldownNotice = document.getElementById("cooldown-notice");
+const reportModal = document.getElementById("report-modal");
+const reportReason = document.getElementById("report-reason");
+const reportDetails = document.getElementById("report-details");
+const reportCancel = document.getElementById("report-cancel");
+const reportSubmit = document.getElementById("report-submit");
 
 let confessions = []; // will be filled from Supabase
 let activeFilter = "All";
 let sortMode = "newest";
+let reportingId = null; // which confession is currently being reported
+
+const POST_COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
 
 // ---------- Device ID ----------
 // Lets someone delete their own confessions without needing an account.
@@ -47,11 +57,55 @@ themeToggle.addEventListener("click", () => {
   applyTheme(isLight ? "dark" : "light");
 });
 
+// ---------- Live clock ----------
+function updateClock() {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-PH", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const timeStr = now.toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  liveClock.textContent = `${dateStr} · ${timeStr}`;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ---------- Posting cooldown ----------
+function getCooldownRemaining() {
+  const lastPosted = Number(localStorage.getItem("last-posted-at") || 0);
+  const elapsed = Date.now() - lastPosted;
+  return Math.max(0, POST_COOLDOWN_MS - elapsed);
+}
+
+function formatCooldown(ms) {
+  const totalSeconds = Math.ceil(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
+}
+
+function updateCooldownUI() {
+  const remaining = getCooldownRemaining();
+
+  if (remaining > 0) {
+    cooldownNotice.textContent = `You can confess again in ${formatCooldown(remaining)}`;
+    cooldownNotice.classList.add("visible");
+    postBtn.disabled = true;
+    return true;
+  }
+
+  cooldownNotice.classList.remove("visible");
+  postBtn.disabled = input.value.trim().length === 0;
+  return false;
+}
+
+updateCooldownUI();
+setInterval(updateCooldownUI, 1000);
+
 // ---------- Character counter ----------
 input.addEventListener("input", () => {
   const remaining = 500 - input.value.length;
   charCount.textContent = `${remaining} left`;
-  postBtn.disabled = input.value.trim().length === 0;
+  if (getCooldownRemaining() === 0) {
+    postBtn.disabled = input.value.trim().length === 0;
+  }
 });
 
 postBtn.disabled = true;
@@ -60,6 +114,8 @@ postBtn.disabled = true;
 postBtn.addEventListener("click", async () => {
   const text = input.value.trim();
   if (!text) return;
+
+  if (getCooldownRemaining() > 0) return; // safety check, shouldn't normally trigger
 
   const category = categorySelect.value;
 
@@ -81,6 +137,8 @@ postBtn.addEventListener("click", async () => {
 
   input.value = "";
   charCount.textContent = "500 left";
+  localStorage.setItem("last-posted-at", Date.now().toString());
+  updateCooldownUI();
   await loadConfessions();
 });
 
@@ -205,6 +263,53 @@ sortToggle.addEventListener("click", (e) => {
   renderFeed();
 });
 
+// ---------- Report modal ----------
+reportCancel.addEventListener("click", () => {
+  reportModal.classList.remove("open");
+  reportingId = null;
+});
+
+reportModal.addEventListener("click", (e) => {
+  if (e.target === reportModal) {
+    reportModal.classList.remove("open");
+    reportingId = null;
+  }
+});
+
+reportSubmit.addEventListener("click", async () => {
+  if (reportingId === null) return;
+
+  const reason = reportReason.value;
+  const details = reportDetails.value.trim();
+
+  reportSubmit.disabled = true;
+  reportSubmit.textContent = "Submitting...";
+
+  const { error } = await db
+    .from("reports")
+    .insert([{ confession_id: reportingId, reason, details }]);
+
+  reportSubmit.disabled = false;
+  reportSubmit.textContent = "Submit Report";
+
+  if (error) {
+    console.error("Error reporting confession:", error);
+    alert("Something went wrong submitting your report.");
+    return;
+  }
+
+  localStorage.setItem(`reported-${reportingId}`, "true");
+  reportModal.classList.remove("open");
+
+  const btn = document.querySelector(`.report-btn[data-id="${reportingId}"]`);
+  if (btn) {
+    btn.classList.add("reported");
+    btn.title = "Reported";
+  }
+
+  reportingId = null;
+});
+
 // ---------- Like / comment interactions ----------
 function attachCardListeners() {
   document.querySelectorAll(".like-btn").forEach((btn) => {
@@ -264,30 +369,17 @@ function attachCardListeners() {
   });
 
   document.querySelectorAll(".report-btn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
+    btn.addEventListener("click", () => {
       const id = Number(btn.dataset.id);
 
       if (localStorage.getItem(`reported-${id}`) === "true") {
         return; // already reported by this device
       }
 
-      btn.disabled = true;
-
-      const { error } = await db
-        .from("reports")
-        .insert([{ confession_id: id }]);
-
-      btn.disabled = false;
-
-      if (error) {
-        console.error("Error reporting confession:", error);
-        alert("Something went wrong submitting your report.");
-        return;
-      }
-
-      localStorage.setItem(`reported-${id}`, "true");
-      btn.classList.add("reported");
-      btn.title = "Reported";
+      reportingId = id;
+      reportReason.value = "Spam";
+      reportDetails.value = "";
+      reportModal.classList.add("open");
     });
   });
 

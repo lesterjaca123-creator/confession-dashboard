@@ -87,6 +87,14 @@ html, body {
   line-height: 1.5;
 }
 
+.live-clock {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin: 1rem 0 0;
+  letter-spacing: 0.04em;
+}
+
 .about-blurb {
   max-width: 36ch;
   margin: 0 auto 1.5rem;
@@ -454,6 +462,131 @@ main {
 .comment-form button:hover {
   background: var(--accent);
   color: var(--ink);
+}
+
+/* ---------- Cooldown notice ---------- */
+.cooldown-notice {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+  margin: -0.75rem 0 1.5rem;
+  display: none;
+}
+
+.cooldown-notice.visible {
+  display: block;
+}
+
+#post-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- Report modal ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding: 1.25rem;
+}
+
+.modal-overlay.open {
+  display: flex;
+}
+
+.modal-box {
+  background: var(--confession);
+  border: 1px solid var(--confession-edge);
+  border-radius: 14px;
+  padding: 1.5rem;
+  max-width: 380px;
+  width: 100%;
+}
+
+.modal-box h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin: 0 0 0.4rem;
+  color: var(--paper);
+}
+
+.modal-sub {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0 0 1rem;
+}
+
+#report-reason {
+  width: 100%;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--confession-edge);
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  margin-bottom: 0.75rem;
+  outline: none;
+}
+
+#report-details {
+  width: 100%;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--confession-edge);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  min-height: 70px;
+  resize: vertical;
+  outline: none;
+}
+
+#report-details::placeholder {
+  color: var(--muted);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1.1rem;
+}
+
+.modal-btn-secondary {
+  background: none;
+  border: 1px solid var(--confession-edge);
+  color: var(--muted);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.modal-btn-secondary:hover {
+  color: var(--paper);
+}
+
+.modal-btn-primary {
+  background: var(--accent);
+  border: none;
+  color: var(--ink);
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.modal-btn-primary:hover {
+  background: #ff6a51;
 }
 
 /* ---------- Footer ---------- */
