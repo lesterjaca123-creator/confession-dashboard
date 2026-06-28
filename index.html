@@ -10,15 +10,13 @@
 
   <div class="grain"></div>
 
-  <div class="top-bar">
-    <p class="live-clock" id="live-clock"></p>
-    <button id="theme-toggle" title="Toggle theme">🌙</button>
-  </div>
+  <button id="theme-toggle" title="Toggle theme">🌙</button>
 
   <header class="hero">
     <p class="eyebrow">say it. no name attached.</p>
     <h1>Alpas</h1>
     <p class="sub">A wall for the things you'd never say out loud. Nobody knows it's you.</p>
+    <p class="live-clock" id="live-clock"></p>
   </header>
 
   <main>
@@ -97,6 +95,18 @@
       <div class="modal-actions">
         <button id="report-cancel" class="modal-btn-secondary">Cancel</button>
         <button id="report-submit" class="modal-btn-primary">Submit Report</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal-box">
+      <h3>Delete this?</h3>
+      <p class="modal-sub" id="delete-modal-text">This can't be undone.</p>
+
+      <div class="modal-actions">
+        <button id="delete-cancel" class="modal-btn-secondary">Cancel</button>
+        <button id="delete-confirm" class="modal-btn-primary">Delete</button>
       </div>
     </div>
   </div>

@@ -23,11 +23,16 @@ const reportReason = document.getElementById("report-reason");
 const reportDetails = document.getElementById("report-details");
 const reportCancel = document.getElementById("report-cancel");
 const reportSubmit = document.getElementById("report-submit");
+const deleteModal = document.getElementById("delete-modal");
+const deleteModalText = document.getElementById("delete-modal-text");
+const deleteCancel = document.getElementById("delete-cancel");
+const deleteConfirmBtn = document.getElementById("delete-confirm");
 
 let confessions = []; // will be filled from Supabase
 let activeFilter = "All";
 let sortMode = "newest";
 let reportingId = null; // which confession is currently being reported
+let pendingDelete = null; // { type: "confession" | "comment", id, confessionId, btn }
 
 const POST_COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -315,6 +320,61 @@ reportSubmit.addEventListener("click", async () => {
   reportingId = null;
 });
 
+// ---------- Delete confirmation modal ----------
+function openDeleteModal(details) {
+  pendingDelete = details;
+  deleteModalText.textContent = details.type === "comment"
+    ? "Delete this comment? This can't be undone."
+    : "Delete this confession? This can't be undone.";
+  deleteModal.classList.add("open");
+}
+
+deleteCancel.addEventListener("click", () => {
+  deleteModal.classList.remove("open");
+  pendingDelete = null;
+});
+
+deleteModal.addEventListener("click", (e) => {
+  if (e.target === deleteModal) {
+    deleteModal.classList.remove("open");
+    pendingDelete = null;
+  }
+});
+
+deleteConfirmBtn.addEventListener("click", async () => {
+  if (!pendingDelete) return;
+
+  deleteConfirmBtn.disabled = true;
+  deleteConfirmBtn.textContent = "Deleting...";
+
+  const table = pendingDelete.type === "comment" ? "comments" : "confessions";
+
+  const { error } = await db
+    .from(table)
+    .delete()
+    .eq("id", pendingDelete.id);
+
+  deleteConfirmBtn.disabled = false;
+  deleteConfirmBtn.textContent = "Delete";
+
+  if (error) {
+    console.error(`Error deleting ${pendingDelete.type}:`, error);
+    alert(`Something went wrong deleting this ${pendingDelete.type}.`);
+    return;
+  }
+
+  deleteModal.classList.remove("open");
+
+  if (pendingDelete.type === "comment") {
+    await loadConfessions();
+    document.getElementById(`comments-${pendingDelete.confessionId}`).classList.add("open");
+  } else {
+    await loadConfessions();
+  }
+
+  pendingDelete = null;
+});
+
 // ---------- Like / comment interactions ----------
 function attachCardListeners() {
   document.querySelectorAll(".like-btn").forEach((btn) => {
@@ -350,26 +410,9 @@ function attachCardListeners() {
   });
 
   document.querySelectorAll(".delete-btn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
+    btn.addEventListener("click", () => {
       const id = Number(btn.dataset.id);
-      const confirmed = confirm("Delete this confession? This can't be undone.");
-      if (!confirmed) return;
-
-      btn.disabled = true;
-
-      const { error } = await db
-        .from("confessions")
-        .delete()
-        .eq("id", id);
-
-      if (error) {
-        console.error("Error deleting confession:", error);
-        alert("Something went wrong deleting your confession.");
-        btn.disabled = false;
-        return;
-      }
-
-      await loadConfessions();
+      openDeleteModal({ type: "confession", id });
     });
   });
 
@@ -416,29 +459,10 @@ function attachCardListeners() {
   });
 
   document.querySelectorAll(".delete-comment-btn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
+    btn.addEventListener("click", () => {
       const commentId = Number(btn.dataset.commentId);
       const confessionId = btn.dataset.confessionId;
-
-      const confirmed = confirm("Delete this comment?");
-      if (!confirmed) return;
-
-      btn.disabled = true;
-
-      const { error } = await db
-        .from("comments")
-        .delete()
-        .eq("id", commentId);
-
-      if (error) {
-        console.error("Error deleting comment:", error);
-        alert("Something went wrong deleting your comment.");
-        btn.disabled = false;
-        return;
-      }
-
-      await loadConfessions();
-      document.getElementById(`comments-${confessionId}`).classList.add("open");
+      openDeleteModal({ type: "comment", id: commentId, confessionId });
     });
   });
 }

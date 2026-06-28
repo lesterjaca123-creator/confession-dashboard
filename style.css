@@ -237,24 +237,22 @@ main {
 }
 
 .top-bar {
-  position: fixed;
-  top: 1.25rem;
-  right: 1.25rem;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
+  display: none; /* no longer used, clock moved back under hero */
 }
 
 .live-clock {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   color: var(--muted);
-  letter-spacing: 0.03em;
-  white-space: nowrap;
+  margin: 1rem 0 0;
+  letter-spacing: 0.04em;
 }
 
 #theme-toggle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 3;
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -631,6 +629,4 @@ footer {
   .hero { padding: 3rem 1.25rem 2rem; }
   .card-meta { flex-wrap: wrap; }
   .timestamp { margin-left: 0; }
-  .top-bar { top: 0.75rem; right: 0.75rem; gap: 0.5rem; }
-  .live-clock { font-size: 0.58rem; }
 }
