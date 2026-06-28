@@ -76,6 +76,22 @@ html, body {
   line-height: 1.5;
 }
 
+.about-blurb {
+  max-width: 36ch;
+  margin: 0 auto 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--confession-edge);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.about-blurb strong {
+  color: var(--accent);
+  font-style: italic;
+}
+
 /* ---------- Composer ---------- */
 main {
   max-width: 640px;
