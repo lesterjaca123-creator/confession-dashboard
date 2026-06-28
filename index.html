@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confession Booth</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="grain"></div>
+
+  <header class="hero">
+    <p class="eyebrow">say it. no name attached.</p>
+    <h1>Confession<span class="booth"> Booth</span></h1>
+    <p class="sub">A wall for the things you'd never say out loud. Nobody knows it's you.</p>
+  </header>
+
+  <main>
+    <section class="composer">
+      <textarea id="confession-input" placeholder="Type your confession..." maxlength="500"></textarea>
+      <div class="composer-footer">
+        <span id="char-count">500 left</span>
+        <button id="post-btn">Confess</button>
+      </div>
+    </section>
+
+    <section class="feed" id="feed">
+      <!-- confessions get inserted here -->
+    </section>
+  </main>
+
+  <footer>
+    <p>Posted anonymously. Be kind, or at least be interesting.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>

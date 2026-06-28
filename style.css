@@ -1,0 +1,331 @@
+/* ---------- Tokens ---------- */
+:root {
+  --ink: #0e0d10;
+  --paper: #f6f1e7;
+  --paper-dim: #e8e1d2;
+  --confession: #1a1822;
+  --confession-edge: #2c2838;
+  --accent: #e8543e;
+  --accent-soft: rgba(232, 84, 62, 0.18);
+  --muted: #8a8593;
+
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Courier New", monospace;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-body);
+  min-height: 100vh;
+}
+
+/* subtle grain overlay for atmosphere */
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  text-align: center;
+  padding: 5rem 1.5rem 3rem;
+  position: relative;
+  z-index: 2;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  text-transform: lowercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0 0 0.75rem;
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.5rem, 7vw, 4.5rem);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.hero h1 .booth {
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 300;
+}
+
+.hero .sub {
+  color: var(--muted);
+  max-width: 32ch;
+  margin: 1rem auto 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* ---------- Composer ---------- */
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+  position: relative;
+  z-index: 2;
+}
+
+.composer {
+  background: var(--confession);
+  border: 1px solid var(--confession-edge);
+  border-radius: 14px;
+  padding: 1.25rem;
+  margin-bottom: 3rem;
+  box-shadow: 0 20px 60px -20px rgba(0,0,0,0.6);
+}
+
+#confession-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  line-height: 1.5;
+  resize: none;
+  min-height: 90px;
+  outline: none;
+}
+
+#confession-input::placeholder {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.composer-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--confession-edge);
+}
+
+#char-count {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+#post-btn {
+  background: var(--accent);
+  color: var(--ink);
+  border: none;
+  padding: 0.6rem 1.3rem;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+#post-btn:hover {
+  background: #ff6a51;
+  transform: translateY(-1px);
+}
+
+#post-btn:active {
+  transform: translateY(0);
+}
+
+#post-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- Feed ---------- */
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  padding: 3rem 0;
+  font-style: italic;
+}
+
+.confession-card {
+  background: var(--confession);
+  border: 1px solid var(--confession-edge);
+  border-radius: 14px;
+  padding: 1.25rem 1.4rem;
+  animation: rise 0.35s ease-out;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.confession-text {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  line-height: 1.55;
+  margin: 0 0 1rem;
+  white-space: pre-wrap;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.like-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.like-btn:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.like-btn.liked {
+  color: var(--accent);
+}
+
+.comment-toggle {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.comment-toggle:hover {
+  color: var(--paper);
+}
+
+.timestamp {
+  margin-left: auto;
+}
+
+/* ---------- Comments ---------- */
+.comments {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--confession-edge);
+  display: none;
+}
+
+.comments.open {
+  display: block;
+}
+
+.comment {
+  font-size: 0.9rem;
+  color: var(--paper-dim);
+  padding: 0.4rem 0;
+  border-bottom: 1px dashed var(--confession-edge);
+}
+
+.comment:last-of-type {
+  border-bottom: none;
+}
+
+.comment-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.comment-form input {
+  flex: 1;
+  background: var(--ink);
+  border: 1px solid var(--confession-edge);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.comment-form input:focus {
+  border-color: var(--accent);
+}
+
+.comment-form button {
+  background: var(--confession-edge);
+  border: none;
+  color: var(--paper);
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.comment-form button:hover {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+/* ---------- Footer ---------- */
+footer {
+  text-align: center;
+  padding: 2rem 0 3rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- Accessibility ---------- */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confession-card { animation: none; }
+  #post-btn { transition: none; }
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 480px) {
+  .hero { padding: 3rem 1.25rem 2rem; }
+  .card-meta { flex-wrap: wrap; }
+  .timestamp { margin-left: 0; }
+}
