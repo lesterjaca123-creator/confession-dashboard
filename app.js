@@ -221,7 +221,12 @@ function renderFeed() {
         <span class="timestamp">${c.time}</span>
       </div>
       <div class="comments" id="comments-${c.id}">
-        ${c.comments.map(comment => `<p class="comment">${escapeHtml(comment.text)}</p>`).join("")}
+        ${c.comments.map(comment => `
+          <p class="comment">
+            <span class="comment-text">${escapeHtml(comment.text)}</span>
+            ${comment.device_id === deviceId ? `<button class="icon-btn delete-comment-btn" data-comment-id="${comment.id}" data-confession-id="${c.id}" title="Delete comment">🗑</button>` : ""}
+          </p>
+        `).join("")}
         <div class="comment-form">
           <input type="text" placeholder="Add a comment..." maxlength="200" data-id="${c.id}" />
           <button data-id="${c.id}" class="submit-comment">Send</button>
@@ -394,7 +399,7 @@ function attachCardListeners() {
 
       const { error } = await db
         .from("comments")
-        .insert([{ confession_id: id, text }]);
+        .insert([{ confession_id: id, text, device_id: deviceId }]);
 
       btn.disabled = false;
 
@@ -407,6 +412,33 @@ function attachCardListeners() {
       commentInput.value = "";
       await loadConfessions();
       document.getElementById(`comments-${id}`).classList.add("open");
+    });
+  });
+
+  document.querySelectorAll(".delete-comment-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const commentId = Number(btn.dataset.commentId);
+      const confessionId = btn.dataset.confessionId;
+
+      const confirmed = confirm("Delete this comment?");
+      if (!confirmed) return;
+
+      btn.disabled = true;
+
+      const { error } = await db
+        .from("comments")
+        .delete()
+        .eq("id", commentId);
+
+      if (error) {
+        console.error("Error deleting comment:", error);
+        alert("Something went wrong deleting your comment.");
+        btn.disabled = false;
+        return;
+      }
+
+      await loadConfessions();
+      document.getElementById(`comments-${confessionId}`).classList.add("open");
     });
   });
 }
